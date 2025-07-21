@@ -11,25 +11,25 @@ const DEFAULT_SERVICES = [
     id: 1,
     name: 'Nails',
     duration: 60,
-    image: '../images/2024\'s Hottest Coffin Nails - Embrace the Latest Spring Trends with Chic Shapes & Gorgeous Pastel Designs_.jpg',
+    image: './2024\'s Hottest Coffin Nails - Embrace the Latest Spring Trends with Chic Shapes & Gorgeous Pastel Designs_.jpg',
   },
   {
     id: 2,
     name: 'Makeup',
     duration: 90,
-    image: '../images/Gorgeous eyeshadow makeup Ideas for a fresh new look.jpg',
+    image: './Gorgeous eyeshadow makeup Ideas for a fresh new look.jpg',
   },
   {
     id: 3,
     name: 'Wigs',
     duration: 120,
-    image: '../images/b43b44d6-c97c-45fc-a474-39aeef3463f2.jpg',
+    image: './b43b44d6-c97c-45fc-a474-39aeef3463f2.jpg',
   },
   {
     id: 4,
     name: 'Braiding',
     duration: 180,
-    image: '../images/Small Knotless Braids 😍😍😍.jpg',
+    image: './Small Knotless Braids 😍😍😍.jpg',
   },
 ];
 
@@ -39,28 +39,28 @@ const DEFAULT_PRODUCTS = [
     name: 'Nail Polish',
     price: 80,
     category: 'Nails',
-    image: '../images/16 Short Square Nails That Make a Statement _ Short Nails.jpg',
+    image: './16 Short Square Nails That Make a Statement _ Short Nails.jpg',
   },
   {
     id: 2,
     name: 'Foundation',
     price: 200,
     category: 'Makeup',
-    image: '../images/Eye makeup.jpg',
+    image: './Eye makeup.jpg',
   },
   {
     id: 3,
     name: 'Wig Cap',
     price: 150,
     category: 'Wigs',
-    image: '../images/4ac62a79-0c56-4a68-b347-6261e1511e68.jpg',
+    image: './4ac62a79-0c56-4a68-b347-6261e1511e68.jpg',
   },
   {
     id: 4,
     name: 'Braiding Gel',
     price: 60,
     category: 'Braiding',
-    image: '../images/30 Feminine Goddess Braids Hairstyles To Add Some Ethnic Vibes To Your Style.jpg',
+    image: './30 Feminine Goddess Braids Hairstyles To Add Some Ethnic Vibes To Your Style.jpg',
   },
 ];
 
@@ -115,20 +115,20 @@ function renderAdminApp() {
             <input type="text" name="category" placeholder="Category" required class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent text-base">
             <select name="image" required class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:border-transparent text-base">
               <option value="">Select an image</option>
-              <option value="../images/2024's Hottest Coffin Nails - Embrace the Latest Spring Trends with Chic Shapes & Gorgeous Pastel Designs_.jpg">Nails - Coffin Nails</option>
-              <option value="../images/16 Short Square Nails That Make a Statement _ Short Nails.jpg">Nails - Square Nails</option>
-              <option value="../images/27 Navy Blue Fall Nail Ideas for 2024.jpg">Nails - Navy Blue</option>
-              <option value="../images/Enhance Your Look With These 24 Pieces_Set Of Rectangular-Shaped, Minimalist, French Style, White.jpg">Nails - French Style</option>
-              <option value="../images/Gorgeous eyeshadow makeup Ideas for a fresh new look.jpg">Makeup - Eyeshadow</option>
-              <option value="../images/Eye makeup.jpg">Makeup - Eye Makeup</option>
-              <option value="../images/New To The Makeup Universe_ Here's Everything You Need, All Under $20.jpg">Makeup - Makeup Collection</option>
-              <option value="../images/b43b44d6-c97c-45fc-a474-39aeef3463f2.jpg">Wigs - Style 1</option>
-              <option value="../images/4ac62a79-0c56-4a68-b347-6261e1511e68.jpg">Wigs - Style 2</option>
-              <option value="../images/2eae5581-30a0-46b8-8025-3c97a8550f57.jpg">Wigs - Style 3</option>
-              <option value="../images/Small Knotless Braids 😍😍😍.jpg">Braiding - Knotless Braids</option>
-              <option value="../images/30 Feminine Goddess Braids Hairstyles To Add Some Ethnic Vibes To Your Style.jpg">Braiding - Goddess Braids</option>
-              <option value="../images/16e86fb6-e506-435c-9790-26f716289d1e.jpg">Braiding - Style 3</option>
-              <option value="../images/974ddba0-fafd-41d8-b6fc-23129ff4246d.jpg">General - Salon</option>
+              <option value="./2024's Hottest Coffin Nails - Embrace the Latest Spring Trends with Chic Shapes & Gorgeous Pastel Designs_.jpg">Nails - Coffin Nails</option>
+              <option value="./16 Short Square Nails That Make a Statement _ Short Nails.jpg">Nails - Square Nails</option>
+              <option value="./27 Navy Blue Fall Nail Ideas for 2024.jpg">Nails - Navy Blue</option>
+              <option value="./Enhance Your Look With These 24 Pieces_Set Of Rectangular-Shaped, Minimalist, French Style, White.jpg">Nails - French Style</option>
+              <option value="./Gorgeous eyeshadow makeup Ideas for a fresh new look.jpg">Makeup - Eyeshadow</option>
+              <option value="./Eye makeup.jpg">Makeup - Eye Makeup</option>
+              <option value="./New To The Makeup Universe_ Here's Everything You Need, All Under $20.jpg">Makeup - Makeup Collection</option>
+              <option value="./b43b44d6-c97c-45fc-a474-39aeef3463f2.jpg">Wigs - Style 1</option>
+              <option value="./4ac62a79-0c56-4a68-b347-6261e1511e68.jpg">Wigs - Style 2</option>
+              <option value="./2eae5581-30a0-46b8-8025-3c97a8550f57.jpg">Wigs - Style 3</option>
+              <option value="./Small Knotless Braids 😍😍😍.jpg">Braiding - Knotless Braids</option>
+              <option value="./30 Feminine Goddess Braids Hairstyles To Add Some Ethnic Vibes To Your Style.jpg">Braiding - Goddess Braids</option>
+              <option value="./16e86fb6-e506-435c-9790-26f716289d1e.jpg">Braiding - Style 3</option>
+              <option value="./974ddba0-fafd-41d8-b6fc-23129ff4246d.jpg">General - Salon</option>
             </select>
             <button type="submit" class="bg-primary text-white rounded-lg px-4 py-3 hover:bg-primary/90 transition font-medium">Add Product</button>
           </form>
