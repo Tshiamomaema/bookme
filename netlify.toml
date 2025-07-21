@@ -1,0 +1,7 @@
+[build]
+  functions = "bookme/functions"
+
+[[redirects]]
+  from = "/bookings*"
+  to = "/.netlify/functions/bookings/:splat"
+  status = 200 

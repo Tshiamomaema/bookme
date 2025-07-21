@@ -166,7 +166,21 @@ function resetToDefaults() {
 
 let services = loadData(LS_KEYS.SERVICES, DEFAULT_SERVICES);
 let products = loadData(LS_KEYS.PRODUCTS, DEFAULT_PRODUCTS);
-let bookings = loadData(LS_KEYS.BOOKINGS, []);
+// Replace localStorage booking logic with API calls
+const API_URL = '/bookings';
+
+async function fetchBookings() {
+  const res = await fetch(API_URL);
+  return await res.json();
+}
+async function addBooking(booking) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(booking)
+  });
+  return await res.json();
+}
 
 // Debug: Log what we have
 console.log('Loaded products:', products);
@@ -291,13 +305,15 @@ function renderBookingForm() {
   updateHourSlots();
   document.getElementById('bookingForm').onsubmit = handleBookingSubmit;
 
-  function updateHourSlots() {
+  async function updateHourSlots() {
     const serviceId = parseInt(document.getElementById('serviceSelect').value);
     const date = document.getElementById('datePicker').value;
     const slotContainer = document.getElementById('hourSlotsContainer');
     slotContainer.innerHTML = '';
     if (!serviceId || !date) return;
     const service = services.find(s => s.id === serviceId);
+    // Fetch bookings from server
+    const bookings = await fetchBookings();
     // Generate slots for 24 hours
     const slots = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -350,7 +366,7 @@ function renderBookingForm() {
   }
 }
 
-function handleBookingSubmit(e) {
+async function handleBookingSubmit(e) {
   e.preventDefault();
   const form = e.target;
   const customer = form.customer.value.trim();
@@ -365,6 +381,8 @@ function handleBookingSubmit(e) {
   // Compose datetime
   const start = new Date(date + 'T' + String(hour).padStart(2, '0') + ':00');
   const end = new Date(start.getTime() + service.duration * 60000);
+  // Fetch bookings from server for validation
+  const bookings = await fetchBookings();
   // Check for conflicts (any service)
   const conflict = bookings.some(b => {
     const bStart = new Date(b.datetime);
@@ -385,8 +403,7 @@ function handleBookingSubmit(e) {
     datetime: start.toISOString(),
     code: 'BM' + Math.floor(100000 + Math.random() * 900000),
   };
-  bookings.push(booking);
-  saveData(LS_KEYS.BOOKINGS, bookings);
+  await addBooking(booking);
   renderBookingForm();
   showBookingConfirmation(booking);
 }

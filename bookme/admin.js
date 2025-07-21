@@ -74,7 +74,17 @@ function saveData(key, value) {
 
 let services = loadData(LS_KEYS.SERVICES, DEFAULT_SERVICES);
 let products = loadData(LS_KEYS.PRODUCTS, DEFAULT_PRODUCTS);
-let bookings = loadData(LS_KEYS.BOOKINGS, []);
+// Replace localStorage booking logic with API calls
+const API_URL = '/bookings';
+
+async function fetchBookings() {
+  const res = await fetch(API_URL);
+  return await res.json();
+}
+async function deleteBooking(id) {
+  await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+}
+
 let isAdmin = false;
 
 function renderAdminApp() {
@@ -162,9 +172,11 @@ function handleAdminLogin(e) {
   }
 }
 
-function renderStats() {
+// Update renderStats to use fetchBookings
+async function renderStats() {
   const stats = document.getElementById('adminStats');
   if (!stats) return;
+  const bookings = await fetchBookings();
   stats.innerHTML = `
     <div class="space-y-2">
       <div class="flex justify-between"><span>Total Bookings:</span> <span class="font-bold text-primary">${bookings.length}</span></div>
@@ -260,10 +272,11 @@ function handleProductForm(e) {
   alert(`Product "${name}" added successfully! It will now appear on the main site.`);
 }
 
-function renderAdminBookings() {
+async function renderAdminBookings() {
   const list = document.getElementById('bookingListAdmin');
   if (!list) return;
   list.innerHTML = '';
+  const bookings = await fetchBookings();
   if (bookings.length === 0) {
     list.innerHTML = '<li class="text-gray-500 py-4 text-center">No bookings yet.</li>';
     return;
@@ -280,9 +293,8 @@ function renderAdminBookings() {
       </span>
       <button class="text-red-500 ml-2 hover:text-red-700" title="Cancel" data-id="${booking.id}">🗑️</button>
     `;
-    li.querySelector('button').onclick = () => {
-      bookings = bookings.filter(b => b.id !== booking.id);
-      saveData(LS_KEYS.BOOKINGS, bookings);
+    li.querySelector('button').onclick = async () => {
+      await deleteBooking(booking.id);
       renderAdminBookings();
       renderStats();
     };
