@@ -170,8 +170,18 @@ let products = loadData(LS_KEYS.PRODUCTS, DEFAULT_PRODUCTS);
 const API_URL = '/bookings';
 
 async function fetchBookings() {
-  const res = await fetch(API_URL);
-  return await res.json();
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error('Failed to fetch');
+    return await res.json();
+  } catch (e) {
+    // Show a warning in the UI if possible
+    const slotContainer = document.getElementById('hourSlotsContainer');
+    if (slotContainer) {
+      slotContainer.innerHTML = '<div class="text-red-500 text-sm mb-2">Warning: Bookings could not be loaded. All times will appear available.</div>' + slotContainer.innerHTML;
+    }
+    return [];
+  }
 }
 async function addBooking(booking) {
   const res = await fetch(API_URL, {
@@ -301,7 +311,7 @@ function renderBookingForm() {
   // Add listeners to update slots
   document.getElementById('serviceSelect').addEventListener('change', updateHourSlots);
   document.getElementById('datePicker').addEventListener('change', updateHourSlots);
-  // Initial render
+  // Always show slots if both selected
   updateHourSlots();
   document.getElementById('bookingForm').onsubmit = handleBookingSubmit;
 
@@ -310,7 +320,10 @@ function renderBookingForm() {
     const date = document.getElementById('datePicker').value;
     const slotContainer = document.getElementById('hourSlotsContainer');
     slotContainer.innerHTML = '';
-    if (!serviceId || !date) return;
+    if (!serviceId || !date) {
+      slotContainer.innerHTML = '<div class="text-gray-400 text-sm">Select a service and date to see available times.</div>';
+      return;
+    }
     const service = services.find(s => s.id === serviceId);
     // Fetch bookings from server
     const bookings = await fetchBookings();

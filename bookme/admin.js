@@ -87,7 +87,8 @@ async function deleteBooking(id) {
 
 let isAdmin = false;
 
-function renderAdminApp() {
+// Change renderAdminApp to async
+async function renderAdminApp() {
   const app = document.getElementById('adminApp');
   if (!isAdmin) {
     app.innerHTML = `
@@ -153,20 +154,21 @@ function renderAdminApp() {
       </div>
     </div>
   `;
-  renderStats();
+  await renderStats();
   renderAdminServices();
   renderAdminProducts();
-  renderAdminBookings();
+  await renderAdminBookings();
   document.getElementById('serviceForm').onsubmit = handleServiceForm;
   document.getElementById('productForm').onsubmit = handleProductForm;
 }
 
-function handleAdminLogin(e) {
+// In handleAdminLogin, await renderAdminApp
+async function handleAdminLogin(e) {
   e.preventDefault();
   const form = e.target;
   if (form.password.value === ADMIN_PASSWORD) {
     isAdmin = true;
-    renderAdminApp();
+    await renderAdminApp();
   } else {
     alert('Incorrect password.');
   }

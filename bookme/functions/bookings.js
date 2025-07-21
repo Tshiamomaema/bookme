@@ -1,20 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const BOOKINGS_FILE = path.join(__dirname, 'bookings-data.json');
+const { createClient } = require('@supabase/supabase-js');
 
-function readBookings() {
-  try {
-    return JSON.parse(fs.readFileSync(BOOKINGS_FILE, 'utf8'));
-  } catch {
-    return [];
-  }
-}
-function writeBookings(bookings) {
-  fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2));
-}
+const SUPABASE_URL = 'https://iwrzuvetjfrhsgprrrom.supabase.co'; // <-- your Supabase Project URL
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3cnp1dmV0amZyaHNncHJycm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwODIwNzAsImV4cCI6MjA2ODY1ODA3MH0.fjl3rqy71p89pdBXlhCMBZdLoAZ4cB6j1uQ7aIx1xGI'; // <-- paste your anon public key here
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 exports.handler = async function(event) {
-  // Enable CORS
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -32,36 +22,37 @@ exports.handler = async function(event) {
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json',
   };
-  let bookings = readBookings();
+
   if (event.httpMethod === 'GET') {
+    const { data, error } = await supabase.from('bookings').select('*');
+    if (error) return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(bookings),
+      body: JSON.stringify(data),
     };
   }
+
   if (event.httpMethod === 'POST') {
     const booking = JSON.parse(event.body);
     if (!booking || !booking.id || !booking.customer || !booking.serviceId || !booking.datetime) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid booking data' }) };
     }
-    bookings.push(booking);
-    writeBookings(bookings);
+    const { data, error } = await supabase.from('bookings').insert([booking]);
+    if (error) return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
     return {
       statusCode: 201,
       headers,
-      body: JSON.stringify(booking),
+      body: JSON.stringify(data[0]),
     };
   }
+
   if (event.httpMethod === 'DELETE') {
     const id = event.path.split('/').pop();
-    const before = bookings.length;
-    bookings = bookings.filter(b => String(b.id) !== String(id));
-    writeBookings(bookings);
-    if (bookings.length === before) {
-      return { statusCode: 404, headers, body: JSON.stringify({ error: 'Booking not found' }) };
-    }
+    const { error } = await supabase.from('bookings').delete().eq('id', id);
+    if (error) return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
     return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
   }
+
   return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
 }; 
