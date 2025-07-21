@@ -259,9 +259,10 @@ function renderBookingForm() {
   container.innerHTML = '';
   // Service options
   const serviceOptions = services.map(s => `<option value="${s.id}">${s.name} (${s.duration} min)</option>`).join('');
-  // Date/time input
+  // Today's date for min
   const now = new Date();
-  const minDate = now.toISOString().slice(0, 16);
+  const minDate = now.toISOString().slice(0, 10);
+  // Render form
   container.innerHTML = `
     <form id="bookingForm" class="space-y-4">
       <div>
@@ -270,19 +271,83 @@ function renderBookingForm() {
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Service</label>
-        <select name="service" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent">
+        <select name="service" id="serviceSelect" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent">
           <option value="">Select a service</option>
           ${serviceOptions}
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
-        <input type="datetime-local" name="datetime" min="${minDate}" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+        <input type="date" name="date" id="datePicker" min="${minDate}" required class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent">
       </div>
+      <div id="hourSlotsContainer"></div>
       <button type="submit" class="w-full bg-primary text-white font-semibold rounded-lg px-6 py-3 hover:bg-primary/90 transition shadow-lg">Book Appointment</button>
     </form>
   `;
+  // Add listeners to update slots
+  document.getElementById('serviceSelect').addEventListener('change', updateHourSlots);
+  document.getElementById('datePicker').addEventListener('change', updateHourSlots);
+  // Initial render
+  updateHourSlots();
   document.getElementById('bookingForm').onsubmit = handleBookingSubmit;
+
+  function updateHourSlots() {
+    const serviceId = parseInt(document.getElementById('serviceSelect').value);
+    const date = document.getElementById('datePicker').value;
+    const slotContainer = document.getElementById('hourSlotsContainer');
+    slotContainer.innerHTML = '';
+    if (!serviceId || !date) return;
+    const service = services.find(s => s.id === serviceId);
+    // Generate slots for 24 hours
+    const slots = [];
+    for (let hour = 0; hour < 24; hour++) {
+      const slotStart = new Date(date + 'T' + String(hour).padStart(2, '0') + ':00');
+      const slotEnd = new Date(slotStart.getTime() + service.duration * 60000);
+      // Check if slotEnd is still on the same day
+      if (slotEnd.getDate() !== slotStart.getDate()) continue;
+      // Check for conflicts with any booking (any service) during the WHOLE duration
+      const conflict = bookings.some(b => {
+        const bStart = new Date(b.datetime);
+        const bService = services.find(s => s.id === b.serviceId);
+        const bEnd = new Date(bStart.getTime() + bService.duration * 60000);
+        // Overlap if any part of [slotStart, slotEnd) overlaps with [bStart, bEnd)
+        return (slotStart < bEnd && slotEnd > bStart);
+      });
+      slots.push({
+        hour,
+        available: !conflict
+      });
+    }
+    // Render slots
+    slotContainer.innerHTML = '<label class="block text-sm font-medium text-gray-700 mb-1">Select Hour</label>';
+    const slotGrid = document.createElement('div');
+    slotGrid.className = 'grid grid-cols-4 gap-2';
+    slots.forEach(slot => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = String(slot.hour).padStart(2, '0') + ':00';
+      btn.className = 'px-3 py-2 rounded font-mono text-sm ' + (slot.available ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 cursor-not-allowed opacity-60');
+      btn.disabled = !slot.available;
+      btn.dataset.hour = slot.hour;
+      btn.onclick = function() {
+        // Deselect all
+        slotGrid.querySelectorAll('button').forEach(b => b.classList.remove('ring', 'ring-green-500'));
+        btn.classList.add('ring', 'ring-green-500');
+        // Set hidden input
+        let hidden = document.getElementById('selectedHour');
+        if (!hidden) {
+          hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'selectedHour';
+          hidden.id = 'selectedHour';
+          slotContainer.appendChild(hidden);
+        }
+        hidden.value = slot.hour;
+      };
+      slotGrid.appendChild(btn);
+    });
+    slotContainer.appendChild(slotGrid);
+  }
 }
 
 function handleBookingSubmit(e) {
@@ -290,20 +355,25 @@ function handleBookingSubmit(e) {
   const form = e.target;
   const customer = form.customer.value.trim();
   const serviceId = parseInt(form.service.value);
-  const datetime = form.datetime.value;
-  if (!customer || !serviceId || !datetime) return;
+  const date = form.date.value;
+  const hour = form.selectedHour ? parseInt(form.selectedHour.value) : null;
+  if (!customer || !serviceId || !date || hour === null) {
+    alert('Please fill in all fields and select an available hour.');
+    return;
+  }
   const service = services.find(s => s.id === serviceId);
-  // Check for double-booking
-  const start = new Date(datetime);
+  // Compose datetime
+  const start = new Date(date + 'T' + String(hour).padStart(2, '0') + ':00');
   const end = new Date(start.getTime() + service.duration * 60000);
+  // Check for conflicts (any service)
   const conflict = bookings.some(b => {
-    if (b.serviceId !== serviceId) return false;
     const bStart = new Date(b.datetime);
-    const bEnd = new Date(bStart.getTime() + service.duration * 60000);
+    const bService = services.find(s => s.id === b.serviceId);
+    const bEnd = new Date(bStart.getTime() + bService.duration * 60000);
     return (start < bEnd && end > bStart);
   });
   if (conflict) {
-    alert('Sorry, this time slot is already booked for this service.');
+    alert('Sorry, this time slot is already booked or not enough time for this service.');
     return;
   }
   // Create booking
@@ -312,7 +382,7 @@ function handleBookingSubmit(e) {
     customer,
     serviceId,
     serviceName: service.name,
-    datetime,
+    datetime: start.toISOString(),
     code: 'BM' + Math.floor(100000 + Math.random() * 900000),
   };
   bookings.push(booking);
